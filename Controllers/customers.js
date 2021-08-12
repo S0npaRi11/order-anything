@@ -112,17 +112,20 @@ router.route('/order')
         let avialbleProducts = []
         let pickup = []
 
-        req.body.items.forEach(i => {
-            crud.findOne(catalogue, {itemName: i.itemName}).then(result => {
-                if(result){
-                    pickup.push(result.addresses[Math.floor(Math.random() * result.addresses.length)])
-                    avialbleProducts.push(i)
-                }
+            crud.readAll(catalogue).then(result => {
+                result.forEach(r => {
+                    if(req.body.items.indexOf(r)){
+                        pickup.push(r.addresses[Math.floor(Math.random() * r.addresses.length)])
+                        const i = req.body.items.filter(o => o.itemName === r.itemName)
+                        avialbleProducts.push(i[0])
+                    }
+                })
 
                 req.body.items = avialbleProducts
                 req.body.pickupLocations = pickup
 
                 req.body.customerID = req.user._id
+
                 if(req.body.items.length !== 0){
 
                     avialbleProducts = []
@@ -143,7 +146,7 @@ router.route('/order')
                     res.status(400).json(e)
                 }
             })
-        })
+        // })
     })
 
 router.route('/order/:id')
